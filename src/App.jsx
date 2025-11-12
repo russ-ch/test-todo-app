@@ -6,8 +6,6 @@ function App() {
   const [todos, setTodos] = useState([])
   const [inputValue, setInputValue] = useState('')
 
-  console.log('todos', todos);
-
   const addTodo = () => {
     if (inputValue.trim() !== '') {
       setTodos([
