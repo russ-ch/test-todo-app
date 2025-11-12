@@ -41,6 +41,13 @@ function App() {
   const completedCount = todos.filter((todo) => todo.completed).length
   const totalCount = todos.length
 
+  const gelInfo = () => {
+    return {
+      completedCount: todos.filter((todo) => todo.completed).length,
+      totalCount: todos.length,
+    }
+  }
+
   console.log('completedCount', completedCount, 'totalCount', totalCount, 'todos', todos);
 
   return (
