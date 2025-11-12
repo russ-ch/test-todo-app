@@ -42,6 +42,7 @@ function App() {
   const totalCount = todos.length
 
   console.log('completedCount', completedCount, 'totalCount', totalCount, 'todos', todos);
+  console.log('@@@completedCount', completedCount, 'totalCount', totalCount, 'todos', todos);
 
   return (
     <div className="app">
