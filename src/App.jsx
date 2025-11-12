@@ -41,7 +41,7 @@ function App() {
   const completedCount = todos.filter((todo) => todo.completed).length
   const totalCount = todos.length
 
-  console.log('completedCount', completedCount);
+  console.log('completedCount', completedCount, 'totalCount', totalCount);
 
   return (
     <div className="app">
