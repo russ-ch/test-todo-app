@@ -1,23 +1,43 @@
 import { useState } from 'react'
 import './App.css';
-// test commit p4
+// test commit p5 - no duplicate todos
 
 function App() {
   const [todos, setTodos] = useState([])
   const [inputValue, setInputValue] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const addTodo = () => {
-    if (inputValue.trim() !== '') {
-      setTodos([
-        ...todos,
-        {
-          id: Date.now(),
-          text: inputValue.trim(),
-          completed: false,
-        },
-      ])
-      setInputValue('')
+    const trimmed = inputValue.trim()
+
+    // Нічого не вводили
+    if (trimmed === '') {
+      setErrorMessage('Todo text cannot be empty')
+      return
     }
+
+    // Перевірка на дублікат (case-insensitive)
+    const exists = todos.some(
+      (todo) => todo.text.toLowerCase() === trimmed.toLowerCase()
+    )
+
+    if (exists) {
+      setErrorMessage('This todo already exists')
+      return
+    }
+
+    // Ок — додаємо todo
+    setTodos([
+      ...todos,
+      {
+        id: Date.now(),
+        text: trimmed,
+        completed: false,
+      },
+    ])
+
+    setInputValue('')
+    setErrorMessage('')
   }
 
   const toggleTodo = (id) => {
@@ -41,26 +61,44 @@ function App() {
   const completedCount = todos.filter((todo) => todo.completed).length
   const totalCount = todos.length
 
-  console.log('completedCount!!!', completedCount, 'totalCount', totalCount, 'todos', todos);
+  console.log(
+    'completedCount!!!',
+    completedCount,
+    'totalCount',
+    totalCount,
+    'todos',
+    todos
+  )
 
   return (
     <div className="app">
       <div className="todo-container">
         <h1 className="todo-title">Todo App</h1>
-        
+
         <div className="input-section">
           <input
             type="text"
             className="todo-input"
             placeholder="Add a new todo..."
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value)
+              if (errorMessage) {
+                setErrorMessage('')
+              }
+            }}
             onKeyPress={handleKeyPress}
           />
           <button className="add-button" onClick={addTodo}>
             Add
           </button>
         </div>
+
+        {errorMessage && (
+          <div className="error-message">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="stats">
           <span>
