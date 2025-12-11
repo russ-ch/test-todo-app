@@ -2,12 +2,15 @@ import { useState } from 'react'
 import './App.css';
 import TodoItem from './components/TodoItem';
 import TodoStats from './components/TodoStats';
+import TodoFilter from './components/TodoFilter';
+import ClearCompleted from './components/ClearCompleted';
 // test commit p5 - no duplicate todos
 
 function App() {
   const [todos, setTodos] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [filter, setFilter] = useState('all')
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -54,11 +57,27 @@ function App() {
     setTodos(todos.filter((todo) => todo.id !== id))
   }
 
+  const clearCompleted = () => {
+    setTodos(todos.filter((todo) => !todo.completed))
+  }
+
+  const handleFilterChange = (newFilter) => {
+    setFilter(newFilter)
+  }
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       addTodo()
     }
   }
+
+  const filteredTodos = todos.filter((todo) => {
+    if (filter === 'active') return !todo.completed
+    if (filter === 'completed') return todo.completed
+    return true
+  })
+
+  const completedCount = todos.filter((todo) => todo.completed).length
 
   console.log('todos', todos)
 
@@ -94,13 +113,19 @@ function App() {
 
         <TodoStats todos={todos} />
 
+        <TodoFilter filter={filter} onFilterChange={handleFilterChange} />
+
         <div className="todo-list">
-          {todos.length === 0 ? (
+          {filteredTodos.length === 0 ? (
             <div className="empty-state">
-              <p>No todos yet. Add one above!</p>
+              <p>
+                {todos.length === 0
+                  ? 'No todos yet. Add one above!'
+                  : `No ${filter} todos.`}
+              </p>
             </div>
           ) : (
-            todos.map((todo) => (
+            filteredTodos.map((todo) => (
               <TodoItem
                 key={todo.id}
                 todo={todo}
@@ -110,6 +135,11 @@ function App() {
             ))
           )}
         </div>
+
+        <ClearCompleted
+          completedCount={completedCount}
+          onClearCompleted={clearCompleted}
+        />
       </div>
     </div>
   )
