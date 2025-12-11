@@ -77,4 +77,52 @@ describe('App component', () => {
     fireEvent.change(input, { target: { value: 'Different' } })
     expect(screen.queryByText(/this todo already exists/i)).not.toBeInTheDocument()
   })
+
+  test('renders TodoStats component with correct counts', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add multiple todos
+    fireEvent.change(input, { target: { value: 'Task 1' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Task 2' } })
+    fireEvent.click(addButton)
+
+    expect(screen.getByText(/2 of 2 completed/i)).toBeInTheDocument()
+
+    // Toggle first todo to complete
+    const firstCheckbox = screen.getAllByRole('checkbox')[0]
+    fireEvent.click(firstCheckbox)
+
+    expect(screen.getByText(/1 of 2 completed/i)).toBeInTheDocument()
+  })
+
+  test('renders TodoItem components for each todo and handles toggle and delete', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    fireEvent.change(input, { target: { value: 'Task A' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Task B' } })
+    fireEvent.click(addButton)
+
+    // Check both todos rendered
+    expect(screen.getByText('Task A')).toBeInTheDocument()
+    expect(screen.getByText('Task B')).toBeInTheDocument()
+
+    // Toggle the first todo
+    const checkboxes = screen.getAllByRole('checkbox')
+    fireEvent.click(checkboxes[0])
+    expect(checkboxes[0].checked).toBe(true)
+
+    // Delete the second todo
+    const deleteButtons = screen.getAllByLabelText(/delete todo/i)
+    fireEvent.click(deleteButtons[1])
+
+    expect(screen.queryByText('Task B')).not.toBeInTheDocument()
+  })
 })
