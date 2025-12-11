@@ -90,7 +90,7 @@ describe('App component', () => {
     fireEvent.change(input, { target: { value: 'Task 2' } })
     fireEvent.click(addButton)
 
-    expect(screen.getByText(/2 of 2 completed/i)).toBeInTheDocument()
+    expect(screen.getByText(/0 of 2 completed/i)).toBeInTheDocument()
 
     // Toggle first todo to complete
     const firstCheckbox = screen.getAllByRole('checkbox')[0]
@@ -124,5 +124,99 @@ describe('App component', () => {
     fireEvent.click(deleteButtons[1])
 
     expect(screen.queryByText('Task B')).not.toBeInTheDocument()
+  })
+
+  test('filter buttons filter todos correctly', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add todos with different completion states
+    fireEvent.change(input, { target: { value: 'Active Task' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Completed Task' } })
+    fireEvent.click(addButton)
+
+    // Complete the second todo
+    const checkboxes = screen.getAllByRole('checkbox')
+    fireEvent.click(checkboxes[1])
+
+    // Initially filter is 'all', both todos shown
+    expect(screen.getByText('Active Task')).toBeInTheDocument()
+    expect(screen.getByText('Completed Task')).toBeInTheDocument()
+
+    // Click 'Active' filter
+    const activeFilterBtn = screen.getByRole('button', { name: /active/i })
+    fireEvent.click(activeFilterBtn)
+
+    expect(screen.getByText('Active Task')).toBeInTheDocument()
+    expect(screen.queryByText('Completed Task')).not.toBeInTheDocument()
+
+    // Click 'Completed' filter
+    const completedFilterBtn = screen.getByRole('button', { name: /completed/i })
+    fireEvent.click(completedFilterBtn)
+
+    expect(screen.queryByText('Active Task')).not.toBeInTheDocument()
+    expect(screen.getByText('Completed Task')).toBeInTheDocument()
+
+    // Click 'All' filter
+    const allFilterBtn = screen.getByRole('button', { name: /^all$/i })
+    fireEvent.click(allFilterBtn)
+
+    expect(screen.getByText('Active Task')).toBeInTheDocument()
+    expect(screen.getByText('Completed Task')).toBeInTheDocument()
+  })
+
+  test('displays appropriate message when no todos or no filtered todos', () => {
+    render(<App />)
+
+    // Initially no todos
+    expect(screen.getByText(/no todos yet. add one above!/i)).toBeInTheDocument()
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add one todo
+    fireEvent.change(input, { target: { value: 'Test Task' } })
+    fireEvent.click(addButton)
+
+    // Click 'Completed' filter - no completed todos
+    const completedFilterBtn = screen.getByRole('button', { name: /completed/i })
+    fireEvent.click(completedFilterBtn)
+
+    expect(screen.getByText(/no completed todos./i)).toBeInTheDocument()
+  })
+
+  test('ClearCompleted button appears when there are completed todos and clears them on click', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add two todos
+    fireEvent.change(input, { target: { value: 'Task 1' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Task 2' } })
+    fireEvent.click(addButton)
+
+    // Complete one todo
+    const checkboxes = screen.getAllByRole('checkbox')
+    fireEvent.click(checkboxes[0])
+
+    // Clear Completed button should appear
+    const clearButton = screen.getByText(/clear completed/i)
+    expect(clearButton).toBeInTheDocument()
+    expect(clearButton).toHaveTextContent('Clear Completed (1)')
+
+    // Click clear completed
+    fireEvent.click(clearButton)
+
+    // Completed todo should be removed
+    expect(screen.queryByText('Task 1')).not.toBeInTheDocument()
+    expect(screen.getByText('Task 2')).toBeInTheDocument()
+
+    // Clear Completed button should disappear
+    expect(screen.queryByText(/clear completed/i)).not.toBeInTheDocument()
   })
 })
