@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import './App.css';
 import TodoItem from './components/TodoItem';
+import TodoStats from './components/TodoStats';
 // test commit p5 - no duplicate todos
 
 function App() {
@@ -59,17 +60,7 @@ function App() {
     }
   }
 
-  const completedCount = todos.filter((todo) => todo.completed).length
-  const totalCount = todos.length
-
-  console.log(
-    'completedCount!!!',
-    completedCount,
-    'totalCount',
-    totalCount,
-    'todos',
-    todos
-  )
+  console.log('todos', todos)
 
   return (
     <div className="app">
@@ -101,11 +92,7 @@ function App() {
           </div>
         )}
 
-        <div className="stats">
-          <span>
-            {completedCount} of {totalCount} completed
-          </span>
-        </div>
+        <TodoStats todos={todos} />
 
         <div className="todo-list">
           {todos.length === 0 ? (
