@@ -125,4 +125,107 @@ describe('App component', () => {
 
     expect(screen.queryByText('Task B')).not.toBeInTheDocument()
   })
+
+  test('filters todos based on selected filter: All, Active, Completed', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add todos with different completion states
+    fireEvent.change(input, { target: { value: 'Task 1' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Task 2' } })
+    fireEvent.click(addButton)
+
+    // Mark second todo as completed
+    const checkboxes = screen.getAllByRole('checkbox')
+    fireEvent.click(checkboxes[1])
+
+    // Filter buttons
+    const allFilter = screen.getByRole('button', { name: /all/i })
+    const activeFilter = screen.getByRole('button', { name: /active/i })
+    const completedFilter = screen.getByRole('button', { name: /completed/i })
+
+    // Initially should show all todos
+    expect(screen.getByText('Task 1')).toBeInTheDocument()
+    expect(screen.getByText('Task 2')).toBeInTheDocument()
+
+    // Click Active filter
+    fireEvent.click(activeFilter)
+    expect(screen.getByText('Task 1')).toBeInTheDocument()
+    expect(screen.queryByText('Task 2')).not.toBeInTheDocument()
+
+    // Click Completed filter
+    fireEvent.click(completedFilter)
+    expect(screen.queryByText('Task 1')).not.toBeInTheDocument()
+    expect(screen.getByText('Task 2')).toBeInTheDocument()
+
+    // Click All filter
+    fireEvent.click(allFilter)
+    expect(screen.getByText('Task 1')).toBeInTheDocument()
+    expect(screen.getByText('Task 2')).toBeInTheDocument()
+  })
+
+  test('displays appropriate empty state messages based on filter and todos', () => {
+    render(<App />)
+
+    // Initially empty todo list
+    expect(screen.getByText(/no todos yet. add one above!/i)).toBeInTheDocument()
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    fireEvent.change(input, { target: { value: 'Task 1' } })
+    fireEvent.click(addButton)
+
+    // By default filter is 'all', so todo should show
+    expect(screen.queryByText(/no todos yet. add one above!/i)).not.toBeInTheDocument()
+    expect(screen.getByText('Task 1')).toBeInTheDocument()
+
+    // Switch to a filter with no matching todos (completed)
+    const completedFilter = screen.getByRole('button', { name: /completed/i })
+    fireEvent.click(completedFilter)
+
+    expect(screen.getByText(/no completed todos\./i)).toBeInTheDocument()
+
+    // Switch to active filter, should have one todo
+    const activeFilter = screen.getByRole('button', { name: /active/i })
+    fireEvent.click(activeFilter)
+
+    expect(screen.getByText('Task 1')).toBeInTheDocument()
+  })
+
+  test('renders ClearCompleted button only when there are completed todos and clears completed todos on click', () => {
+    render(<App />)
+
+    const input = screen.getByPlaceholderText(/add a new todo/i)
+    const addButton = screen.getByText(/add/i)
+
+    // Add two todos
+    fireEvent.change(input, { target: { value: 'Task 1' } })
+    fireEvent.click(addButton)
+    fireEvent.change(input, { target: { value: 'Task 2' } })
+    fireEvent.click(addButton)
+
+    // ClearCompleted button should not be visible yet
+    expect(screen.queryByText(/clear completed/i)).not.toBeInTheDocument()
+
+    // Complete one todo
+    const checkboxes = screen.getAllByRole('checkbox')
+    fireEvent.click(checkboxes[0])
+
+    // Now ClearCompleted button should appear with count 1
+    expect(screen.getByText(/clear completed \(1\)/i)).toBeInTheDocument()
+
+    // Click the ClearCompleted button
+    fireEvent.click(screen.getByText(/clear completed \(1\)/i))
+
+    // The completed todo should be removed
+    expect(screen.queryByText('Task 1')).not.toBeInTheDocument()
+    expect(screen.getByText('Task 2')).toBeInTheDocument()
+
+    // ClearCompleted button should disappear after clearing
+    expect(screen.queryByText(/clear completed/i)).not.toBeInTheDocument()
+  })
 })
