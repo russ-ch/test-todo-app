@@ -1,4 +1,5 @@
 function TodoItem({ todo, onToggle, onDelete }) {
+  console.log('TodoItem render')
   return (
     <div className={`todo-item ${todo.completed ? 'completed' : ''}`}>
       <input
