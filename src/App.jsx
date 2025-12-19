@@ -4,10 +4,13 @@ import TodoItem from './components/TodoItem';
 import TodoStats from './components/TodoStats';
 import TodoFilter from './components/TodoFilter';
 import ClearCompleted from './components/ClearCompleted';
+import Planner from './components/Planner';
 // test commit p5 - no duplicate todos
 
 function App() {
+  const [currentView, setCurrentView] = useState('todo') // 'todo' or 'planner'
   const [todos, setTodos] = useState([])
+  const [events, setEvents] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
@@ -79,12 +82,47 @@ function App() {
 
   const completedCount = todos.filter((todo) => todo.completed).length
 
+  // Planner event handlers
+  const handleAddEvent = (event) => {
+    setEvents([...events, event])
+  }
+
+  const handleUpdateEvent = (id, updatedEvent) => {
+    setEvents(
+      events.map((event) =>
+        event.id === id ? { ...event, ...updatedEvent } : event
+      )
+    )
+  }
+
+  const handleDeleteEvent = (id) => {
+    setEvents(events.filter((event) => event.id !== id))
+  }
+
   console.log('todos', todos)
 
   return (
     <div className="app">
       <div className="todo-container">
-        <h1 className="todo-title">Todo App</h1>
+        <h1 className="todo-title">Todo & Planner App</h1>
+
+        <div className="nav-tabs">
+          <button
+            className={`nav-tab ${currentView === 'todo' ? 'active' : ''}`}
+            onClick={() => setCurrentView('todo')}
+          >
+            Todo
+          </button>
+          <button
+            className={`nav-tab ${currentView === 'planner' ? 'active' : ''}`}
+            onClick={() => setCurrentView('planner')}
+          >
+            Planner
+          </button>
+        </div>
+
+        {currentView === 'todo' ? (
+          <>
 
         <div className="input-section">
           <input
@@ -140,6 +178,15 @@ function App() {
           completedCount={completedCount}
           onClearCompleted={clearCompleted}
         />
+          </>
+        ) : (
+          <Planner
+            events={events}
+            onAddEvent={handleAddEvent}
+            onUpdateEvent={handleUpdateEvent}
+            onDeleteEvent={handleDeleteEvent}
+          />
+        )}
       </div>
     </div>
   )
