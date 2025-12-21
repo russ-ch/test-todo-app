@@ -82,16 +82,47 @@ function App() {
     setEvents(events.filter((event) => event.id !== id))
   }
 
-  // Дефект 3: handleUpdateEvent приймає часткові або невалідні дані
-  // Не перевіряємо валідність даних перед оновленням
+  // Validation: handleUpdateEvent validates data before updating
   const handleUpdateEvent = (updatedEvent) => {
-    // Дозволяємо оновлення навіть з порожнім title або невалідними даними
+    // Validation: Check title is not empty
+    if (!updatedEvent.title || updatedEvent.title.trim() === '') {
+      console.error('Cannot update event: title is required')
+      return
+    }
+
+    // Validation: Check date is provided and valid
+    if (!updatedEvent.date || updatedEvent.date.trim() === '') {
+      console.error('Cannot update event: date is required')
+      return
+    }
+
+    const dateObj = new Date(updatedEvent.date)
+    if (isNaN(dateObj.getTime())) {
+      console.error('Cannot update event: invalid date format')
+      return
+    }
+
+    // Validation: Check time is provided and valid
+    if (!updatedEvent.time || updatedEvent.time.trim() === '') {
+      console.error('Cannot update event: time is required')
+      return
+    }
+
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+    if (!timeRegex.test(updatedEvent.time)) {
+      console.error('Cannot update event: invalid time format')
+      return
+    }
+
+    // All validations passed - update event
     setEvents(
       events.map((event) =>
         event.id === updatedEvent.id
           ? {
               ...event,
-              ...updatedEvent, // Може містити невалідні дані
+              title: updatedEvent.title.trim(),
+              date: updatedEvent.date,
+              time: updatedEvent.time,
             }
           : event
       )

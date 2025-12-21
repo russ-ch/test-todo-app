@@ -11,27 +11,63 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    // Дефект 1: Не перевіряємо дату та час - дозволяємо пусті значення
-    // Дефект 2: Не перевіряємо дублікати подій
-    // Дефект 3: Не очищаємо error-message після успішного додавання
-
+    // Validation: Check title
     if (title.trim() === '') {
       setErrorMessage('Event title cannot be empty')
       return
     }
 
-    // Додаємо подію навіть з пустою датою/часом
+    // Validation: Check date and time are provided
+    if (!date || date.trim() === '') {
+      setErrorMessage('Date is required')
+      return
+    }
+
+    if (!time || time.trim() === '') {
+      setErrorMessage('Time is required')
+      return
+    }
+
+    // Validation: Check for duplicate events (same title, date, and time)
+    const trimmedTitle = title.trim()
+    const duplicateExists = events.some(
+      (event) =>
+        event.title.toLowerCase() === trimmedTitle.toLowerCase() &&
+        event.date === date &&
+        event.time === time
+    )
+
+    if (duplicateExists) {
+      setErrorMessage('An event with the same title, date, and time already exists')
+      return
+    }
+
+    // Validation: Check date format is valid
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      setErrorMessage('Invalid date format')
+      return
+    }
+
+    // Validation: Check time format is valid (HH:MM)
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+    if (!timeRegex.test(time)) {
+      setErrorMessage('Invalid time format. Please use HH:MM format')
+      return
+    }
+
+    // All validations passed - add event
     const newEvent = {
       id: Date.now(),
-      title: title.trim(),
-      date: date || '', // Дозволяємо пусту дату
-      time: time || '', // Дозволяємо пустий час
+      title: trimmedTitle,
+      date: date,
+      time: time,
     }
 
     onAddEvent(newEvent)
     
-    // Не очищаємо error-message навмисно
-    // setErrorMessage('')
+    // Clear error message and form fields
+    setErrorMessage('')
     setTitle('')
     setDate('')
     setTime('')
@@ -48,7 +84,10 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
             value={title}
             onChange={(e) => {
               setTitle(e.target.value)
-              // Не очищаємо error-message при зміні вводу
+              // Clear error message when user starts typing
+              if (errorMessage) {
+                setErrorMessage('')
+              }
             }}
           />
         </div>
@@ -56,14 +95,26 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
           <input
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value)}
+            onChange={(e) => {
+              setDate(e.target.value)
+              // Clear error message when user changes date
+              if (errorMessage) {
+                setErrorMessage('')
+              }
+            }}
           />
         </div>
         <div className="input-group">
           <input
             type="time"
             value={time}
-            onChange={(e) => setTime(e.target.value)}
+            onChange={(e) => {
+              setTime(e.target.value)
+              // Clear error message when user changes time
+              if (errorMessage) {
+                setErrorMessage('')
+              }
+            }}
           />
         </div>
         <button type="submit">Add Event</button>

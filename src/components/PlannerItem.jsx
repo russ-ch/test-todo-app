@@ -4,6 +4,7 @@ function PlannerItem({ event, onSave, onCancel }) {
   const [title, setTitle] = useState(event.title || '')
   const [date, setDate] = useState(event.date || '')
   const [time, setTime] = useState(event.time || '')
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     setTitle(event.title || '')
@@ -12,18 +13,45 @@ function PlannerItem({ event, onSave, onCancel }) {
   }, [event])
 
   const handleSave = () => {
-    // Дефект: Перевіряємо тільки title, не перевіряємо date/time
-    // Дозволяємо зберігати некоректні дані
+    // Validation: Check title
     if (title.trim() === '') {
-      return // Просто не зберігаємо, але не показуємо помилку
+      setErrorMessage('Event title cannot be empty')
+      return
     }
 
-    // Зберігаємо навіть з пустою датою/часом або некоректними даними
+    // Validation: Check date is provided
+    if (!date || date.trim() === '') {
+      setErrorMessage('Date is required')
+      return
+    }
+
+    // Validation: Check time is provided
+    if (!time || time.trim() === '') {
+      setErrorMessage('Time is required')
+      return
+    }
+
+    // Validation: Check date format is valid
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) {
+      setErrorMessage('Invalid date format')
+      return
+    }
+
+    // Validation: Check time format is valid (HH:MM)
+    const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
+    if (!timeRegex.test(time)) {
+      setErrorMessage('Invalid time format. Please use HH:MM format')
+      return
+    }
+
+    // All validations passed - save event
+    setErrorMessage('')
     onSave({
       ...event,
       title: title.trim(),
-      date: date, // Може бути пустим або некоректним
-      time: time, // Може бути пустим або некоректним
+      date: date,
+      time: time,
     })
   }
 
@@ -32,21 +60,39 @@ function PlannerItem({ event, onSave, onCancel }) {
       <input
         type="text"
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={(e) => {
+          setTitle(e.target.value)
+          if (errorMessage) {
+            setErrorMessage('')
+          }
+        }}
         placeholder="Event title"
       />
       <input
         type="date"
         value={date}
-        onChange={(e) => setDate(e.target.value)}
-        // Немає валідації дати
+        onChange={(e) => {
+          setDate(e.target.value)
+          if (errorMessage) {
+            setErrorMessage('')
+          }
+        }}
       />
       <input
         type="time"
         value={time}
-        onChange={(e) => setTime(e.target.value)}
-        // Немає валідації часу
+        onChange={(e) => {
+          setTime(e.target.value)
+          if (errorMessage) {
+            setErrorMessage('')
+          }
+        }}
       />
+      {errorMessage && (
+        <div className="error-message">
+          {errorMessage}
+        </div>
+      )}
       <button onClick={handleSave}>Save</button>
       <button onClick={onCancel}>Cancel</button>
     </div>
