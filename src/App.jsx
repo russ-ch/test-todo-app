@@ -4,6 +4,7 @@ import TodoItem from './components/TodoItem';
 import TodoStats from './components/TodoStats';
 import TodoFilter from './components/TodoFilter';
 import ClearCompleted from './components/ClearCompleted';
+import Planner from './components/Planner';
 // test commit p5 - no duplicate todos
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
+  const [events, setEvents] = useState([])
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -69,6 +71,31 @@ function App() {
     if (e.key === 'Enter') {
       addTodo()
     }
+  }
+
+  // Planner functions
+  const handleAddEvent = (event) => {
+    setEvents([...events, event])
+  }
+
+  const handleDeleteEvent = (id) => {
+    setEvents(events.filter((event) => event.id !== id))
+  }
+
+  // Дефект 3: handleUpdateEvent приймає часткові або невалідні дані
+  // Не перевіряємо валідність даних перед оновленням
+  const handleUpdateEvent = (updatedEvent) => {
+    // Дозволяємо оновлення навіть з порожнім title або невалідними даними
+    setEvents(
+      events.map((event) =>
+        event.id === updatedEvent.id
+          ? {
+              ...event,
+              ...updatedEvent, // Може містити невалідні дані
+            }
+          : event
+      )
+    )
   }
 
   const filteredTodos = todos.filter((todo) => {
@@ -139,6 +166,13 @@ function App() {
         <ClearCompleted
           completedCount={completedCount}
           onClearCompleted={clearCompleted}
+        />
+
+        <Planner
+          events={events}
+          onAddEvent={handleAddEvent}
+          onUpdateEvent={handleUpdateEvent}
+          onDeleteEvent={handleDeleteEvent}
         />
       </div>
     </div>
