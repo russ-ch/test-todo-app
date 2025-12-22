@@ -13,6 +13,7 @@ function App() {
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
   const [events, setEvents] = useState([])
+  const [eventUpdateError, setEventUpdateError] = useState('')
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -84,34 +85,37 @@ function App() {
 
   // Validation: handleUpdateEvent validates data before updating
   const handleUpdateEvent = (updatedEvent) => {
+    // Clear any previous error
+    setEventUpdateError('')
+
     // Validation: Check title is not empty
     if (!updatedEvent.title || updatedEvent.title.trim() === '') {
-      console.error('Cannot update event: title is required')
-      return
+      setEventUpdateError('Cannot update event: title is required')
+      return false
     }
 
     // Validation: Check date is provided and valid
     if (!updatedEvent.date || updatedEvent.date.trim() === '') {
-      console.error('Cannot update event: date is required')
-      return
+      setEventUpdateError('Cannot update event: date is required')
+      return false
     }
 
     const dateObj = new Date(updatedEvent.date)
     if (isNaN(dateObj.getTime())) {
-      console.error('Cannot update event: invalid date format')
-      return
+      setEventUpdateError('Cannot update event: invalid date format')
+      return false
     }
 
     // Validation: Check time is provided and valid
     if (!updatedEvent.time || updatedEvent.time.trim() === '') {
-      console.error('Cannot update event: time is required')
-      return
+      setEventUpdateError('Cannot update event: time is required')
+      return false
     }
 
     const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/
     if (!timeRegex.test(updatedEvent.time)) {
-      console.error('Cannot update event: invalid time format')
-      return
+      setEventUpdateError('Cannot update event: invalid time format. Please use HH:MM format')
+      return false
     }
 
     // All validations passed - update event
@@ -127,6 +131,7 @@ function App() {
           : event
       )
     )
+    return true
   }
 
   const filteredTodos = todos.filter((todo) => {
@@ -204,6 +209,8 @@ function App() {
           onAddEvent={handleAddEvent}
           onUpdateEvent={handleUpdateEvent}
           onDeleteEvent={handleDeleteEvent}
+          updateError={eventUpdateError}
+          onClearUpdateError={() => setEventUpdateError('')}
         />
       </div>
     </div>

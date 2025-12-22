@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import PlannerItem from './PlannerItem'
 
-function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
+function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent, updateError, onClearUpdateError }) {
   const [title, setTitle] = useState('')
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
@@ -29,12 +29,23 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
     }
 
     // Validation: Check for duplicate events (same title, date, and time)
+    // Normalize inputs: trim and normalize date/time for consistent comparison
     const trimmedTitle = title.trim()
+    const normalizedDate = date.trim()
+    const normalizedTime = time.trim()
+    
     const duplicateExists = events.some(
-      (event) =>
-        event.title.toLowerCase() === trimmedTitle.toLowerCase() &&
-        event.date === date &&
-        event.time === time
+      (event) => {
+        const eventTitle = (event.title || '').trim().toLowerCase()
+        const eventDate = (event.date || '').trim()
+        const eventTime = (event.time || '').trim()
+        
+        return (
+          eventTitle === trimmedTitle.toLowerCase() &&
+          eventDate === normalizedDate &&
+          eventTime === normalizedTime
+        )
+      }
     )
 
     if (duplicateExists) {
@@ -126,6 +137,12 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
         </div>
       )}
 
+      {updateError && (
+        <div className="error-message">
+          {updateError}
+        </div>
+      )}
+
       <div className="events-list">
         {events.map((event) => (
           editingId === event.id ? (
@@ -133,10 +150,20 @@ function Planner({ events, onAddEvent, onUpdateEvent, onDeleteEvent }) {
               key={event.id}
               event={event}
               onSave={(updatedEvent) => {
-                onUpdateEvent(updatedEvent)
-                setEditingId(null)
+                const success = onUpdateEvent(updatedEvent)
+                if (success) {
+                  setEditingId(null)
+                  if (onClearUpdateError) {
+                    onClearUpdateError()
+                  }
+                }
               }}
-              onCancel={() => setEditingId(null)}
+              onCancel={() => {
+                setEditingId(null)
+                if (onClearUpdateError) {
+                  onClearUpdateError()
+                }
+              }}
             />
           ) : (
             <div key={event.id} className="event-item">
