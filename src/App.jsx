@@ -118,15 +118,45 @@ function App() {
       return false
     }
 
+    // Validation: Check for duplicate events (same title, date, and time)
+    // Normalize inputs for consistent comparison
+    const trimmedTitle = updatedEvent.title.trim()
+    const normalizedDate = updatedEvent.date.trim()
+    const normalizedTime = updatedEvent.time.trim()
+
+    const duplicateExists = events.some(
+      (event) => {
+        // Skip the event being updated
+        if (event.id === updatedEvent.id) {
+          return false
+        }
+        
+        const eventTitle = (event.title || '').trim().toLowerCase()
+        const eventDate = (event.date || '').trim()
+        const eventTime = (event.time || '').trim()
+        
+        return (
+          eventTitle === trimmedTitle.toLowerCase() &&
+          eventDate === normalizedDate &&
+          eventTime === normalizedTime
+        )
+      }
+    )
+
+    if (duplicateExists) {
+      setEventUpdateError('An event with the same title, date, and time already exists')
+      return false
+    }
+
     // All validations passed - update event
     setEvents(
       events.map((event) =>
         event.id === updatedEvent.id
           ? {
               ...event,
-              title: updatedEvent.title.trim(),
-              date: updatedEvent.date,
-              time: updatedEvent.time,
+              title: trimmedTitle,
+              date: normalizedDate,
+              time: normalizedTime,
             }
           : event
       )
