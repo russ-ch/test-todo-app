@@ -11,6 +11,7 @@ function App() {
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -57,6 +58,35 @@ function App() {
     setTodos(todos.filter((todo) => todo.id !== id))
   }
 
+  const editTodo = (id, newText) => {
+    const trimmed = newText.trim()
+    
+    if (trimmed === '') {
+      return
+    }
+
+    // Normalize trimmed value once for comparison
+    const normalizedTrimmed = trimmed.toLowerCase()
+
+    // Перевірка на дублікат (case-insensitive), виключаючи поточний todo
+    const exists = todos.some(
+      (todo) => todo.id !== id && todo.text.toLowerCase() === normalizedTrimmed
+    )
+
+    // Early exit if duplicate found - prevents unintended state update
+    if (exists) {
+      setErrorMessage('This todo already exists')
+      return
+    }
+
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, text: trimmed } : todo
+      )
+    )
+    setErrorMessage('')
+  }
+
   const clearCompleted = () => {
     setTodos(todos.filter((todo) => !todo.completed))
   }
@@ -71,10 +101,20 @@ function App() {
     }
   }
 
+  // Normalize search query once before filtering
+  const normalizedSearch = searchQuery.toLowerCase().trim()
+
   const filteredTodos = todos.filter((todo) => {
-    if (filter === 'active') return !todo.completed
-    if (filter === 'completed') return todo.completed
-    return true
+    // Apply status filter
+    let matchesFilter = true
+    if (filter === 'active') matchesFilter = !todo.completed
+    if (filter === 'completed') matchesFilter = todo.completed
+
+    // Apply search query filter
+    const matchesSearch = normalizedSearch === '' || 
+      todo.text.toLowerCase().includes(normalizedSearch)
+
+    return matchesFilter && matchesSearch
   })
 
   const completedCount = todos.filter((todo) => todo.completed).length
@@ -113,6 +153,16 @@ function App() {
 
         <TodoStats todos={todos} />
 
+        <div className="search-section">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search todos..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
         <TodoFilter filter={filter} onFilterChange={handleFilterChange} />
 
         <div className="todo-list">
@@ -131,6 +181,7 @@ function App() {
                 todo={todo}
                 onToggle={toggleTodo}
                 onDelete={deleteTodo}
+                onEdit={editTodo}
               />
             ))
           )}

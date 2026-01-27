@@ -71,6 +71,17 @@
   transform: translateY(0);
 }
 
+.error-message {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #ffe5e5;
+  color: #d32f2f;
+  border: 1px solid #ffcdd2;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
 .stats {
   text-align: center;
   color: #666;
@@ -79,6 +90,61 @@
   padding: 0.75rem;
   background: #f5f5f5;
   border-radius: 8px;
+}
+
+.search-section {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+  outline: 3px solid rgba(102, 126, 234, 0.4);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2), 0 0 0 6px rgba(102, 126, 234, 0.1);
+}
+
+.todo-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.filter-button {
+  padding: 0.625rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: #f5f5f5;
+  color: #666;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filter-button:hover {
+  background: #e8e8e8;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.filter-button.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
 .todo-list {
@@ -120,6 +186,23 @@
   font-size: 1rem;
   color: #333;
   word-break: break-word;
+}
+
+.todo-text:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.todo-edit-input {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 1rem;
+  border: 2px solid #667eea;
+  border-radius: 4px;
+  outline: none;
+  background: white;
+  color: #333;
 }
 
 .todo-item.completed .todo-text {
