@@ -33,6 +33,13 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
     }
   }
 
+  const handleTextKeyDown = (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && !todo.completed) {
+      e.preventDefault()
+      handleDoubleClick()
+    }
+  }
+
   return (
     <div className={`todo-item ${todo.completed ? 'completed' : ''}`}>
       <input
@@ -54,7 +61,11 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }) {
       ) : (
         <span 
           className="todo-text" 
+          tabIndex={todo.completed ? -1 : 0}
+          role="button"
+          aria-label={todo.completed ? undefined : `Edit todo: ${todo.text}`}
           onDoubleClick={handleDoubleClick}
+          onKeyDown={handleTextKeyDown}
           style={{ cursor: todo.completed ? 'default' : 'pointer' }}
         >
           {todo.text}

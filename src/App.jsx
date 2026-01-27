@@ -65,11 +65,15 @@ function App() {
       return
     }
 
+    // Normalize trimmed value once for comparison
+    const normalizedTrimmed = trimmed.toLowerCase()
+
     // Перевірка на дублікат (case-insensitive), виключаючи поточний todo
     const exists = todos.some(
-      (todo) => todo.id !== id && todo.text.toLowerCase() === trimmed.toLowerCase()
+      (todo) => todo.id !== id && todo.text.toLowerCase() === normalizedTrimmed
     )
 
+    // Early exit if duplicate found - prevents unintended state update
     if (exists) {
       setErrorMessage('This todo already exists')
       return
@@ -97,6 +101,9 @@ function App() {
     }
   }
 
+  // Normalize search query once before filtering
+  const normalizedSearch = searchQuery.toLowerCase().trim()
+
   const filteredTodos = todos.filter((todo) => {
     // Apply status filter
     let matchesFilter = true
@@ -104,8 +111,8 @@ function App() {
     if (filter === 'completed') matchesFilter = todo.completed
 
     // Apply search query filter
-    const matchesSearch = searchQuery.trim() === '' || 
-      todo.text.toLowerCase().includes(searchQuery.toLowerCase().trim())
+    const matchesSearch = normalizedSearch === '' || 
+      todo.text.toLowerCase().includes(normalizedSearch)
 
     return matchesFilter && matchesSearch
   })
