@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css';
 import TodoItem from './components/TodoItem';
 import TodoStats from './components/TodoStats';
@@ -8,9 +8,39 @@ import ClearCompleted from './components/ClearCompleted';
 
 function App() {
   const [todos, setTodos] = useState([])
+  const [recentlyDeleted, setRecentlyDeleted] = useState([])
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    const savedTodos = localStorage.getItem('todos')
+    const savedDeleted = localStorage.getItem('recentlyDeleted')
+
+    if (savedTodos) {
+      try {
+        setTodos(JSON.parse(savedTodos))
+      } catch (e) {
+        console.error('Failed to parse todos from storage', e)
+      }
+    }
+
+    if (savedDeleted) {
+      try {
+        setRecentlyDeleted(JSON.parse(savedDeleted))
+      } catch (e) {
+        console.error('Failed to parse recentlyDeleted from storage', e)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos))
+  }, [todos])
+
+  useEffect(() => {
+    localStorage.setItem('recentlyDeleted', JSON.stringify(recentlyDeleted))
+  }, [])
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -54,11 +84,44 @@ function App() {
   }
 
   const deleteTodo = (id) => {
+    const toDelete = todos.find((todo) => todo.id === id)
+
+    if (!toDelete) {
+      return
+    }
+
     setTodos(todos.filter((todo) => todo.id !== id))
+
+    let updatedDeleted = [toDelete, ...recentlyDeleted]
+
+    if (updatedDeleted.length > 5) {
+      updatedDeleted = updatedDeleted.slice(1, 6)
+    }
+
+    setRecentlyDeleted(updatedDeleted)
   }
 
   const clearCompleted = () => {
     setTodos(todos.filter((todo) => !todo.completed))
+  }
+
+  const undoLastDelete = () => {
+    const last = recentlyDeleted[recentlyDeleted.length - 1]
+
+    const restored = {
+      ...last,
+    }
+
+    setTodos([...todos, restored])
+    setRecentlyDeleted(recentlyDeleted.slice(0, recentlyDeleted.length - 1))
+  }
+
+  const restoreDeletedTodo = (todo) => {
+    const restored = {
+      ...todo,
+    }
+
+    setTodos([...todos, restored])
   }
 
   const handleFilterChange = (newFilter) => {
@@ -133,6 +196,32 @@ function App() {
                 onDelete={deleteTodo}
               />
             ))
+          )}
+        </div>
+
+        <div className="recently-deleted">
+          <div className="recently-deleted-header">
+            <button className="undo-button" onClick={undoLastDelete}>
+              Undo last delete
+            </button>
+            <span>Recently deleted</span>
+          </div>
+          {recentlyDeleted.length === 0 ? (
+            <p className="recently-deleted-empty">Nothing deleted yet.</p>
+          ) : (
+            <ul className="recently-deleted-list">
+              {recentlyDeleted.map((todo, index) => (
+                <li key={index} className="recently-deleted-item">
+                  <span>{todo.text}</span>
+                  <button
+                    className="restore-button"
+                    onClick={() => restoreDeletedTodo(todo)}
+                  >
+                    Restore
+                  </button>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
 
