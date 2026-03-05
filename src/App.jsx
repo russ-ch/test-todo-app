@@ -1,16 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css';
 import TodoItem from './components/TodoItem';
 import TodoStats from './components/TodoStats';
 import TodoFilter from './components/TodoFilter';
 import ClearCompleted from './components/ClearCompleted';
-// test commit p5 - no duplicate todos
+
+const STORAGE_KEY = 'test-todo-app-todos'
+
+function loadTodos() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (e) {
+    console.warn('Failed to load todos from localStorage', e)
+  }
+  return []
+}
 
 function App() {
-  const [todos, setTodos] = useState([])
+  const [todos, setTodos] = useState(loadTodos)
   const [inputValue, setInputValue] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [filter, setFilter] = useState('all')
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
+  }, [todos])
 
   const addTodo = () => {
     const trimmed = inputValue.trim()
@@ -57,6 +74,20 @@ function App() {
     setTodos(todos.filter((todo) => todo.id !== id))
   }
 
+  const editTodo = (id, newText) => {
+    const trimmed = newText.trim()
+    if (trimmed === '') return
+    const exists = todos.some(
+      (todo) => todo.id !== id && todo.text.toLowerCase() === trimmed.toLowerCase()
+    )
+    if (exists) return
+    setTodos(
+      todos.map((todo) =>
+        todo.id === id ? { ...todo, text: trimmed } : todo
+      )
+    )
+  }
+
   const clearCompleted = () => {
     setTodos(todos.filter((todo) => !todo.completed))
   }
@@ -78,8 +109,6 @@ function App() {
   })
 
   const completedCount = todos.filter((todo) => todo.completed).length
-
-  console.log('todos', todos)
 
   return (
     <div className="app">
@@ -131,6 +160,7 @@ function App() {
                 todo={todo}
                 onToggle={toggleTodo}
                 onDelete={deleteTodo}
+                onEdit={editTodo}
               />
             ))
           )}

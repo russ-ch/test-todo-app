@@ -127,6 +127,29 @@
   color: #999;
 }
 
+.todo-text {
+  cursor: default;
+}
+
+.todo-item:not(.completed) .todo-text {
+  cursor: text;
+}
+
+.todo-edit-input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  border: 2px solid #667eea;
+  border-radius: 6px;
+  outline: none;
+  background: white;
+  color: #333;
+}
+
+.todo-edit-input:focus {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
 .delete-button {
   width: 32px;
   height: 32px;

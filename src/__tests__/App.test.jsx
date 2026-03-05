@@ -2,7 +2,13 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import App from '../App'
 
+const STORAGE_KEY = 'test-todo-app-todos'
+
 describe('App component', () => {
+  beforeEach(() => {
+    localStorage.removeItem(STORAGE_KEY)
+  })
+
   test('adds a todo when input is valid and not a duplicate', () => {
     render(<App />)
 
